@@ -9,8 +9,7 @@ exports.deleteOne = Model => async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message:"Deleted Successfully",
-      doc
+      message: "Deleted Successfully",
     });
   } catch (err) {
     res.status(400).json({
@@ -22,22 +21,23 @@ exports.deleteOne = Model => async (req, res) => {
 
 exports.updateOne = Model => async (req, res) => {
   try {
-    const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
+    const { role, password, verifyToken, forgotPasswordToken, ...safeBody } = req.body;
+
+    const doc = await Model.findByIdAndUpdate(req.params.id, safeBody, {
       new: true,
       runValidators: true
     });
 
     if (!doc) {
-     return  res.status(400).json({
+      return res.status(400).json({
         success: false,
-        
         message: "No Doc found"
       });
     }
 
     return res.status(200).json({
       success: true,
-        doc
+      doc
     });
   } catch (err) {
     return res.status(400).json({
@@ -52,7 +52,7 @@ exports.createOne = Model => async (req, res) => {
     const doc = await Model.create(req.body);
     res.status(201).json({
       success: true,
-      message:"Created Successfully",
+      message: "Created Successfully",
       doc
     });
   } catch (err) {
@@ -84,25 +84,13 @@ exports.getOne = (Model, pops) => async (req, res) => {
 };
 
 exports.getAll = Model => async (req, res) => {
-  // to allow for nested GET reviews on tour
-  // let filter = {};
-  // if (req.params.tourId) filter = { tour: req.params.tourId };
 
-  // const features = new APIFeatures(Model.find(filter), req.query)
-  //   .filter()
-  //   .sort()
-  //   .limitFields()
-  //   .paginate();
-  // const doc = await features.query;
-
-  // SEND RESPONSE
-
-  try{
-    const doc=await Model.find()
+  try {
+    const doc = await Model.find()
     res.status(200).json({
       success: true,
       results: doc.length,
-      message:'Data Fetched Successfully',
+      message: 'Data Fetched Successfully',
       doc
     });
   } catch (err) {

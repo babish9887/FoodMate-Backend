@@ -1,10 +1,11 @@
 const Order = require("../models/Order");
 const User = require("../models/User");
+const { SAFE_SELECT } = require('../models/User');
 const { decodeBase64 } = require("../Utils/decodeBase64");
 const { decryptData } = require("../Utils/decryptData");
 exports.createOrder = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select(SAFE_SELECT);
     if (!user || !user.isVerified) {
       return res.status(400).json({
         success: false,
@@ -77,7 +78,7 @@ exports.createOrder = async (req, res) => {
         success: true,
         message: "Order created successfully",
         doc: newOrder,
-        user: user,
+        // user object intentionally omitted — client already has session context
       });
     }
   } catch (err) {

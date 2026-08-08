@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+const SAFE_SELECT = '-password -verifyToken -verifyTokenExpiry -forgotPasswordToken -forgotPasswordExpiry -__v';
+
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -20,11 +22,13 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    required: false,
+    enum: ['user', 'admin'],
+    default: 'user',
+    immutable: true,
   },
   isActive: {
     type: Boolean,
-    default:true
+    default: true
   },
   isVerified: {
     type: Boolean,
@@ -55,12 +59,33 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-}, { timestamps: true });
+}, {
+  timestamps: true,
+  toJSON: {
+    transform(doc, ret) {
+      delete ret.password;
+      delete ret.verifyToken;
+      delete ret.verifyTokenExpiry;
+      delete ret.forgotPasswordToken;
+      delete ret.forgotPasswordExpiry;
+      delete ret.__v;
+      return ret;
+    }
+  }
+});
+
 
 userSchema.pre("save", function (next) {
+  if (this.isNew) {
+    this.role = 'user';
+  } else if (this.isModified('role')) {
+    return next(new Error('SECURITY: role field cannot be changed after account creation'));
+  }
   this.updatedAt = Date.now();
   next();
 });
 
 const User = mongoose.model("User", userSchema);
 module.exports = User;
+module.exports.SAFE_SELECT = SAFE_SELECT;
+
