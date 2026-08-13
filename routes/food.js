@@ -27,7 +27,7 @@ router.delete('/category/deletecategory/:id',
 
 router.get('/getfoods',getFoods)
 router.post('/up', updateFoodTemp)
-router.get('/adminfoods', getAll(Food))
+router.get('/adminfoods', protect, restrictTo('admin'), getAll(Food))
 
 router.post('/createfood',
   protect,restrictTo('admin'),
